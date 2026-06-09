@@ -60,7 +60,7 @@ from app.tools.calculator_tool import calculator_tool
 print(calculator_tool("25+5"))
 print(calculator_tool("10*3"))"""
 
-
+#testing agents
 from app.ingestion.squad_loader import SquadLoader
 from app.rag.chunker import Chunker
 from app.rag.embedder import Embedder
@@ -77,5 +77,8 @@ vectorstore = store.create_vectorstore(chunks,
                                        embedder.embedding_model)
 retriever = Retriever(vectorstore)
 agent = ResearchAgent(retriever)
-answer = agent.invoke("Who did the Virgin Mary appear to?")
-print(answer)
+print(agent.invoke("20/5"))
+print("\n")
+print(agent.invoke("Who did the Virgin Mary appear to?"))
+
+#print(answer)

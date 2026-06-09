@@ -2,6 +2,8 @@ from typing import TypedDict
 from app.services.llm_service import LLMService
 from langgraph.graph import StateGraph, START, END
 from app.rag.prompt_template import RAG_PROMPT
+from app.agents.tool_node import calculator_node
+from app.agents.router import router
 
 #STATE
 class AgentState(TypedDict):
@@ -17,9 +19,15 @@ class ResearchAgent:
 
         graph.add_node("retrieve", self.retrieve_node)
         graph.add_node("generate", self.generate_node)
-        graph.add_edge(START, "retrieve")
-        graph.add_edge('retrieve', 'generate')
-        graph.add_edge("generate", END)
+        #graph.add_edge(START, "retrieve")
+        graph.add_node("calculator", calculator_node)
+        graph.add_conditional_edges(START, 
+                                    router, 
+                                    {'calculator':'calculator',
+                                    'retrieve':'retrieve'})
+        graph.add_edge('retrieve', 'generate') #edge for node 'retrieve'
+        graph.add_edge('calculator', 'generate') #edge for node 'calculator'
+        graph.add_edge("generate", END) #edge for node 'generate'. will END here
         self.agent = graph.compile()
 
     def retrieve_node(self, state:AgentState):
