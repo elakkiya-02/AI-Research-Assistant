@@ -11,6 +11,8 @@ class AgentState(TypedDict):
     context: str
     answer: str
     action: str
+    observation: str
+    iterations: int
 #RETRIEVAL NODE
 class ResearchAgent:
     def __init__(self, retriever):
@@ -18,27 +20,50 @@ class ResearchAgent:
         self.llm = LLMService()
         graph = StateGraph(AgentState)
 
-        graph.add_node("retrieve", self.retrieve_node)
-        graph.add_node("generate", self.generate_node)
         graph.add_node("reason", self.reason_node)
-        #graph.add_edge(START, "retrieve")
+        graph.add_node("retrieve", self.retrieve_node)
         graph.add_node("calculator", calculator_node)
+        graph.add_node("observe", self.observe_node)
+        graph.add_node("generate", self.generate_node)
+        #graph.add_edge(START, "retrieve")
+        #FLOW 
         graph.add_edge(START, 'reason')
         graph.add_conditional_edges("reason",
                                     lambda state:state['action'],
                                     {'calculator':'calculator',
                                     'retrieve':'retrieve'})
-        
+        graph.add_edge('calculator', 'observe') #edge for node 'calculator' - no generatio but observation
+        graph.add_edge("observe", 'generate')#edge node for observation
         graph.add_edge('retrieve', 'generate') #edge for node 'retrieve'
-        graph.add_edge('calculator', 'generate') #edge for node 'calculator'
         graph.add_edge("generate", END) #edge for node 'generate'. will END here
         self.agent = graph.compile()
 
+    def reason_node(self, state):
+        print("At reason node...")
+        print("This Iteration : ", state['iterations'])
+        if state['iterations']>=1:
+            action='generate'
+        else:
+            question = state['question']
+            operators = ["+", "-","*","/"]
+            if any (op in question for op in operators):
+                action = "calculator"
+            else:
+                action ="retrieve"
+        print("Action = ", action)
+        return{"action" :  action}
+    
     def retrieve_node(self, state:AgentState):
         print("At retrieve node...")
         docs = self.retriever.retrieve(state["question"])
         context = "\n\n".join(doc.page_content for doc in docs)
         return {"context": context}
+    
+    def observe_node(self, state):
+        print("At Observation node...")
+        #converts the observation from the calculator tool to context
+        return {'context': state['observation'],
+                'iterations': state['iterations'] + 1}
     
     def generate_node(self, state:AgentState):
         print("At generate node...")
@@ -49,18 +74,12 @@ class ResearchAgent:
     
     def invoke(self,question:str):
         print("Invoking response...")
-        response = self.agent.invoke({"question":question})
+        #response = self.agent.invoke({"question":question})
+        response = self.agent.invoke({'question': question,
+                                      'iterations':0})
         return response["answer"]
     
-    def reason_node(self, state):
-        print("At reason node...")
-        question = state['question']
-        operators = ["+", "-","*","/"]
-        if any (op in question for op in operators):
-            action = "calculator"
-        else:
-            action ="retrieve"
-        print("Action = ", action)
-        return{"action" :  action}
-
+    
+    
+    
 

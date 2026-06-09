@@ -4,4 +4,6 @@ def calculator_node(state):
     print("Calling Calculator tool from calculator node...")
     result = calculator_tool(state['question'])
     print("RESULT: ", result)
-    return {'context':f"calculator result: {result}"}
+    #return {'context':f"calculator result: {result}"}
+    #OBSERVATION
+    return {'observation':f"calculator result: {result}"}
