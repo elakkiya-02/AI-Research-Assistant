@@ -2,8 +2,10 @@ from typing import TypedDict
 from app.services.llm_service import LLMService
 from langgraph.graph import StateGraph, START, END
 from app.rag.prompt_template import RAG_PROMPT
-from app.agents.tool_node import calculator_node
-from app.agents.router import router
+#from app.agents.tool_node import calculator_node
+#from app.agents.tool_node import text_stats_node
+from app.agents.tool_node import tool_node
+#from app.agents.router import router
 
 #STATE
 class AgentState(TypedDict):
@@ -23,7 +25,9 @@ class ResearchAgent:
 
         graph.add_node("reason", self.reason_node)
         graph.add_node("retrieve", self.retrieve_node)
-        graph.add_node("calculator", calculator_node)
+        #graph.add_node("calculator", calculator_node)
+        #graph.add_node("text_stats", text_stats_node)
+        graph.add_node('tool', tool_node)
         graph.add_node("observe", self.observe_node)
         graph.add_node("generate", self.generate_node)
         #graph.add_edge(START, "retrieve")
@@ -31,9 +35,15 @@ class ResearchAgent:
         graph.add_edge(START, 'reason')
         graph.add_conditional_edges("reason",
                                     lambda state:state['action'],
-                                    {'calculator':'calculator',
-                                    'retrieve':'retrieve'})
-        graph.add_edge('calculator', 'observe') #edge for node 'calculator' - no generatio but observation
+                                    {#'calculator':'calculator',
+                                        'calculator': 'tool',
+                                     #'text_stats' :'text_stats',
+                                     'text_stats': 'tool',
+                                    'retrieve':'retrieve',
+                                    'generate':'generate'})
+        #graph.add_edge('calculator', 'observe') #edge for node 'calculator' - no generatio but observation
+        #graph.add_edge('text_stats', 'observe')
+        graph.add_edge('tool', 'observe')
         graph.add_edge("observe", 'generate')#edge node for observation
         graph.add_edge('retrieve', 'generate') #edge for node 'retrieve'
         graph.add_edge("generate", END) #edge for node 'generate'. will END here
@@ -47,7 +57,9 @@ class ResearchAgent:
         else:
             question = state['question']
             operators = ["+", "-","*","/"]
-            if any (op in question for op in operators):
+            if question.lower().startswith('count words'):
+                action='text_stats'
+            elif any (op in question for op in operators):
                 action = "calculator"
             else:
                 action ="retrieve"
@@ -80,8 +92,3 @@ class ResearchAgent:
                                       'iterations':0,
                                       'tool_history': []})
         return response["answer"]
-    
-    
-    
-    
-

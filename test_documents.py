@@ -80,5 +80,7 @@ agent = ResearchAgent(retriever)
 print(agent.invoke("20/5"))
 print("\n")
 print(agent.invoke("Who did the Virgin Mary appear to?"))
+print("\n")
+print(agent.invoke("count words Learning Multiple tool iteration.."))
 
 #print(answer)
