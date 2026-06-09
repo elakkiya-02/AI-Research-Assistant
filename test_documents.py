@@ -24,7 +24,7 @@ vectors = embedder.embed_documents(['Machine learning is a branch of AI',
 print(type(vectors))
 print(len(vectors))
 print("Vector Dimension ", len(vectors[0])) """
-
+"""
 #VECTOR STORE
 from app.ingestion.squad_loader import SquadLoader
 from app.rag.chunker import Chunker
@@ -45,13 +45,17 @@ store = VectorStore()
 vectorstore = store.create_vectorstore(chunks = chunks,
                                        embedding_model = embedder.embedding_model)
 retriever = Retriever(vectorstore)
-"""results = retriever.retrieve("Who did the viegin mary appear to?")
+#results = retriever.retrieve("Who did the viegin mary appear to?")
 print("retrieved doc: ", len(results))
 print("1st result\n")
 print(results[0].page_content)
 print("\n Metadata")
-print(results[0].metadata)"""
+#print(results[0].metadata)
 rag = RAGChain(retriever)
 answer = rag.generate_answer("Who did the virgin mary appear to?")
 
-print(answer)
+print(answer)"""
+
+from app.tools.calculator_tool import calculator_tool
+print(calculator_tool("25+5"))
+print(calculator_tool("10*3"))
