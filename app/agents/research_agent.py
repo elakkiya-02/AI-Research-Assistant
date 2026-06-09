@@ -13,6 +13,7 @@ class AgentState(TypedDict):
     action: str
     observation: str
     iterations: int
+    tool_history: list
 #RETRIEVAL NODE
 class ResearchAgent:
     def __init__(self, retriever):
@@ -76,7 +77,8 @@ class ResearchAgent:
         print("Invoking response...")
         #response = self.agent.invoke({"question":question})
         response = self.agent.invoke({'question': question,
-                                      'iterations':0})
+                                      'iterations':0,
+                                      'tool_history': []})
         return response["answer"]
     
     
