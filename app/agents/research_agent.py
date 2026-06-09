@@ -1,0 +1,39 @@
+from typing import TypedDict
+from app.services.llm_service import LLMService
+from langgraph.graph import StateGraph, START, END
+from app.rag.prompt_template import RAG_PROMPT
+
+#STATE
+class AgentState(TypedDict):
+    question: str
+    context: str
+    answer: str
+#RETRIEVAL NODE
+class ResearchAgent:
+    def __init__(self, retriever):
+        self.retriever = retriever
+        self.llm = LLMService()
+        graph = StateGraph(AgentState)
+
+        graph.add_node("retrieve", self.retrieve_node)
+        graph.add_node("generate", self.generate_node)
+        graph.add_edge(START, "retrieve")
+        graph.add_edge('retrieve', 'generate')
+        graph.add_edge("generate", END)
+        self.agent = graph.compile()
+
+    def retrieve_node(self, state:AgentState):
+        docs = self.retriever.retrieve(state["question"])
+        context = "\n\n".join(doc.page_content for doc in docs)
+        return {"context": context}
+    
+    def generate_node(self, state:AgentState):
+        prompt = RAG_PROMPT.format(context=state["context"],
+                                   question=state["question"])
+        answer = self.llm.generate_response(prompt)
+        return{"answer":answer}
+    
+    def invoke(self,question:str):
+        response = self.agent.invoke({"question":question})
+        return response["answer"]
+

@@ -55,7 +55,27 @@ rag = RAGChain(retriever)
 answer = rag.generate_answer("Who did the virgin mary appear to?")
 
 print(answer)"""
-
+"""
 from app.tools.calculator_tool import calculator_tool
 print(calculator_tool("25+5"))
-print(calculator_tool("10*3"))
+print(calculator_tool("10*3"))"""
+
+
+from app.ingestion.squad_loader import SquadLoader
+from app.rag.chunker import Chunker
+from app.rag.embedder import Embedder
+from app.rag.vector_store import VectorStore
+from app.rag.retriever import Retriever
+from app.agents.research_agent import ResearchAgent
+loader = SquadLoader()
+documents = loader.load_documents()
+chunker = Chunker()
+chunks = chunker.split_documents(documents[:20])
+embedder = Embedder()
+store = VectorStore()
+vectorstore = store.create_vectorstore(chunks,
+                                       embedder.embedding_model)
+retriever = Retriever(vectorstore)
+agent = ResearchAgent(retriever)
+answer = agent.invoke("Who did the Virgin Mary appear to?")
+print(answer)
