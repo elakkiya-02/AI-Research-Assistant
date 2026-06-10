@@ -8,3 +8,7 @@ langchain-text-splitters
 langchain-ollama
 faiss-cpu
 pytest
+fastapi
+uvicorn
+streamlit
+requests
