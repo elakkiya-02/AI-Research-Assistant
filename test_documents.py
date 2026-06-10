@@ -67,14 +67,25 @@ from app.rag.embedder import Embedder
 from app.rag.vector_store import VectorStore
 from app.rag.retriever import Retriever
 from app.agents.research_agent import ResearchAgent
-loader = SquadLoader()
-documents = loader.load_documents()
-chunker = Chunker()
-chunks = chunker.split_documents(documents[:20])
-embedder = Embedder()
-store = VectorStore()
-vectorstore = store.create_vectorstore(chunks,
+from app.rag.vector_store_manager import VectorStoreManager
+from pathlib import Path
+
+#following runs
+if Path("vectorstore/index.faiss").exists():
+    vectorstore = VectorStoreManager.load(embedding_model=embedder.embedding_model)
+else:
+    loader = SquadLoader()
+    documents = loader.load_documents()
+    chunker = Chunker()
+    chunks = chunker.split_documents(documents[:20])
+    embedder = Embedder()
+    store = VectorStore()
+#first run
+    vectorstore = store.create_vectorstore(chunks,
                                        embedder.embedding_model)
+    VectorStoreManager.save(vectorstore)
+    print("Vector Store saved....")
+    
 retriever = Retriever(vectorstore)
 agent = ResearchAgent(retriever)
 print(agent.invoke("20/5"))
