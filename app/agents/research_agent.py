@@ -6,7 +6,7 @@ from app.agents.tool_node import tool_node
 #from app.agents.router import router
 from app.agents.state import AgentState
 from app.agents.nodes import reason_node, generate_node, retrieve_node, observe_node
-
+from app.logger import logger
 #STATE
 
 #RETRIEVAL NODE
@@ -34,10 +34,11 @@ class ResearchAgent:
         graph.add_edge('observe', 'reason')
         graph.add_edge('retrieve', 'generate')
         graph.add_edge('generate', END)
-        self.agent.compile()
+        self.agent = graph.compile()
     
     def invoke(self,question:str):
-        print("Invoking response...")
+        #print("Invoking response...")
+        logger.info("Invoking Agent")
         #response = self.agent.invoke({"question":question})
         response = self.agent.invoke({'question': question,
                                       'iterations':0,
