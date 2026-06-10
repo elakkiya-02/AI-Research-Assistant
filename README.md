@@ -13,4 +13,13 @@ Runtime - Ollama
 Language - Python 
 
 PROJECT STATUS:
-RAG > LangGraph > ReAct > Tool Registry 
+Browser > Streamlit UI > HTTP request > FastAPI > ResearchAgent > Langraph - Tool Node, Retrieval Node > LLM > Response
+
+AI Layer - Ollama, Qwen3, nomic-embed-text, RAG, FAISS
+Agent Layer - LangGraph, ReAct, Tool Registry, LLM based routing
+
+Backend - FastAPI, Pydantic Schema
+
+Frontend - Streamlit
+
+
