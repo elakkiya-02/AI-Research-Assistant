@@ -6,7 +6,9 @@ from app.rag.prompt_template import RAG_PROMPT
 #from app.agents.tool_node import text_stats_node
 from app.agents.tool_node import tool_node
 #from app.agents.router import router
-
+from app.agents.reason_prompt import REASON_PROMPT
+allowed_actions = {'calculator', 'text_stats',
+                   'retrieve','generate'}
 #STATE
 class AgentState(TypedDict):
     question: str
@@ -52,6 +54,7 @@ class ResearchAgent:
     def reason_node(self, state):
         print("At reason node...")
         print("This Iteration : ", state['iterations'])
+        """#RULE BASED REASONING
         if state['iterations']>=1:
             action='generate'
         else:
@@ -62,7 +65,11 @@ class ResearchAgent:
             elif any (op in question for op in operators):
                 action = "calculator"
             else:
-                action ="retrieve"
+                action ='retrieve'"""
+        prompt = REASON_PROMPT.format(question=state['question'])
+        action = self.llm.generate_response(prompt).strip().lower()
+        if action not in allowed_actions:
+            action='retrieve'
         print("Action = ", action)
         return{"action" :  action}
     
